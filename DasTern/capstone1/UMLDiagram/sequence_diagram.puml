@@ -1,0 +1,179 @@
+@startuml
+!theme vibrant
+skinparam backgroundColor #FEFEFE
+skinparam sequenceMessageAlign center
+
+title DasTern Sequence Diagram - Complete Medication Reminder Flow
+
+actor Patient as patient
+participant "Mobile App\n(Flutter)" as app #LightBlue
+participant "Camera" as camera #LightGray
+participant "OCR Service\n(Document AI)" as ocr #LightYellow
+participant "AI Enhancement\n(DeepSeek)" as ai #LightPink
+participant "Backend API\n(Node.js)" as backend #LightGreen
+database "Local Storage\n(SQLite)" as db #LightCoral
+participant "Notification\nScheduler" as scheduler #Lavender
+participant "Telegram Bot" as telegram #LightCyan
+actor "Family Member" as family
+
+== Prescription Scanning Phase ==
+
+patient -> app: Open "Scan Prescription"
+activate app
+
+app -> camera: Launch camera interface
+activate camera
+camera --> app: Camera ready
+
+patient -> camera: Capture prescription image
+camera --> app: Return image data
+deactivate camera
+
+app -> app: Validate image quality
+note right: Check brightness,\nclarity, resolution
+
+app -> ocr: Send prescription image
+activate ocr
+ocr -> ocr: Preprocess image\n(contrast, noise reduction)
+ocr -> ocr: Detect text regions
+ocr -> ocr: Perform OCR recognition
+ocr --> app: Return raw extracted text
+deactivate ocr
+
+note over app
+  Raw text may contain:
+  - Spelling errors
+  - Inconsistent spacing
+  - Abbreviations
+end note
+
+== AI Text Enhancement Phase ==
+
+app -> ai: Send raw OCR text
+activate ai
+ai -> ai: Correct spelling errors
+ai -> ai: Standardize medical terms
+ai -> ai: Parse medication details
+ai -> ai: Structure data (JSON format)
+ai --> app: Return structured medication data
+deactivate ai
+
+note over app
+  Structured output:
+  {
+    "medicine_name": "Paracetamol",
+    "dosage": "500mg",
+    "frequency": "3 times/day",
+    "timing": "after meal",
+    "duration": "7 days"
+  }
+end note
+
+app --> patient: Display extracted medication
+patient -> app: Review and confirm/edit data
+
+== Meal Time Input Phase ==
+
+app -> patient: Request meal schedule
+patient -> app: Enter meal times\n(Breakfast: 08:00, Lunch: 13:00, Dinner: 19:30)
+
+== Reminder Generation Phase ==
+
+app -> backend: Send medication data + meal times
+activate backend
+
+backend -> backend: Calculate reminder schedule
+note right
+  Example calculation:
+  Medicine: 3x/day after meal
+  
+  Reminders:
+  08:15 (breakfast + 15 min)
+  13:15 (lunch + 15 min)
+  19:45 (dinner + 15 min)
+end note
+
+backend -> db: Store medication schedule
+activate db
+db --> backend: Confirm storage
+deactivate db
+
+backend --> app: Return reminder schedule
+deactivate backend
+
+app -> scheduler: Register reminder notifications
+activate scheduler
+scheduler --> app: Notifications scheduled
+deactivate scheduler
+
+app -> db: Save schedule locally (offline support)
+activate db
+db --> app: Saved successfully
+deactivate db
+
+app --> patient: Show confirmation & schedule
+
+== Notification Phase (At Scheduled Time) ==
+
+scheduler -> app: Trigger reminder (08:15 AM)
+activate scheduler
+activate app
+
+app -> app: Display in-app notification
+app -> app: Play Khmer TTS voice reminder
+
+app --> patient: Show notification:\n"Time to take Paracetamol 500mg"
+
+alt Family monitoring enabled
+    app -> backend: Notify reminder triggered
+    activate backend
+    backend -> telegram: Send notification to family
+    activate telegram
+    telegram -> family: "Patient has medication reminder"
+    deactivate telegram
+    deactivate backend
+end
+
+patient -> app: Mark as "Taken" or ignore
+
+alt Medication taken
+    app -> db: Log medication as taken
+    activate db
+    db --> app: Updated
+    deactivate db
+    app -> backend: Update adherence record
+    activate backend
+    backend --> app: Confirmed
+    deactivate backend
+else Medication missed (30 min passed)
+    app -> db: Log as missed dose
+    activate db
+    db --> app: Updated
+    deactivate db
+    
+    alt Family alert enabled
+        app -> backend: Send missed dose alert
+        activate backend
+        backend -> telegram: Alert family
+        activate telegram
+        telegram -> family: "⚠️ Patient missed dose at 08:15 AM"
+        deactivate telegram
+        deactivate backend
+    end
+end
+
+deactivate app
+deactivate scheduler
+
+== View History Phase ==
+
+patient -> app: Open "Medication History"
+activate app
+app -> db: Fetch medication records
+activate db
+db --> app: Return history data
+deactivate db
+app --> patient: Display:\n- Taken doses\n- Missed doses\n- Adherence percentage
+deactivate app
+
+@enduml

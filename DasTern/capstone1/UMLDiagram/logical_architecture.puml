@@ -1,0 +1,103 @@
+@startuml
+!theme vibrant
+skinparam backgroundColor #FEFEFE
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+
+title DasTern System - Logical Architecture (Simplified)
+
+' ==================== PRESENTATION LAYER ====================
+node "Presentation Layer" #E3F2FD {
+    node "Flutter UI" as ui #90CAF9 {
+        [Patient/Family Interface]
+        [Doctor Interface]
+        ' [Family Interface]
+    }
+    
+    ' component "Localization" as i18n #64B5F6 {
+    '     [Khmer/English]
+    '     [TTS (Khmer)]
+    ' }
+}
+
+' ==================== BUSINESS LOGIC LAYER ====================
+node "Business Logic Layer" #C8E6C9 {
+    node "Core Services" as services #81C784 {
+        ' [Authentication]
+        [Prescription/Medication Management]
+        ' [Medication Management]
+        [Reminder Management]
+        ' [Adherence Tracking]
+        ' [Family Monitoring]
+    }
+}
+
+' ==================== INTEGRATION LAYER ====================
+node "Integration Layer" #FFF9C4 {
+    node "External Services" as external #FFF176 {
+        [OCR Services]
+        
+        [Notifications]
+        
+    }
+}
+
+' ==================== DATA ACCESS LAYER ====================
+node "Data Access Layer" #FFCCBC {
+    node "Security" as data #FFAB91 {
+        ' [Repositories]
+        ' [DB Context]
+        node "Data Persistence" #E1BEE7 {
+        database "MySQL\n(Server)" as mysql #BA68C8
+        database "SQLite\n(Local)" as sqlite #AB47BC
+}
+    }
+    ' [Security] as security
+}
+
+' ==================== PERSISTENCE LAYER ====================
+node "Data Persistence" #E1BEE7 {
+    database "MySQL\n(Server)" as mysql #BA68C8
+    database "SQLite\n(Local)" as sqlite #AB47BC
+}
+
+' ==================== CROSS-CUTTING ====================
+' node "Cross-Cutting Concerns" #CFD8DC {
+'     node [Security] as security #90A4AE
+'     node [Logging] as logging #78909C
+'     node [Configuration] as config #607D8B
+' }
+
+' ==================== CONNECTIONS ====================
+ui -down-> services
+' i18n -down-> services
+
+services -down-> external
+services -down-> data
+
+external -down-> data
+
+data -down-> mysql
+data -down-> sqlite
+
+' security .up.> ui
+' security .up.> services
+' security .up.> data
+
+' logging .up.> services
+' logging .up.> external
+
+' config .up.> ui
+' config .up.> external
+' config .up.> data
+
+legend right
+    |= Layer |= Purpose |
+    | <back:#E3F2FD>Presentation</back> | User interface |
+    | <back:#C8E6C9>Business Logic</back> | Application rules |
+    | <back:#FFF9C4>Integration</back> | External services |
+    | <back:#FFCCBC>Data Access</back> | Database operations |
+    | <back:#E1BEE7>Persistence</back> | Data storage |
+endlegend
+
+@enduml

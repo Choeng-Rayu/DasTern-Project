@@ -1,0 +1,65 @@
+@startuml UseCase
+' Use case diagram for DasTern medication adherence app
+skinparam backgroundColor #f4f6fb
+skinparam actorStyle awesome
+skinparam rectangle {
+  BackgroundColor #ffffff
+  BorderColor #4f81bd
+}
+skinparam usecase {
+  BackgroundColor #e6eef9
+  BorderColor #4f81bd
+}
+
+actor Patient
+actor Doctor
+actor Family as Caregiver
+actor "Telegram Bot" as Telegram
+
+rectangle DasTern {
+  usecase "Register / Login" as UC_Register
+  usecase "Scan Prescription" as UC_Scan
+  usecase "OCR Extract Medication" as UC_OCR
+  usecase "AI Clean Text" as UC_AI
+  usecase "Edit Medication Details" as UC_Edit
+  usecase "Generate Reminder Schedule" as UC_Schedule
+  usecase "Set Meal Times" as UC_Meal
+  usecase "Receive In-App Notification" as UC_Notify
+  usecase "Khmer TTS Reminder" as UC_TTS
+  usecase "View Medication History" as UC_History
+  usecase "Offline Access" as UC_Offline
+  usecase "Notify Family (Telegram)" as UC_TG
+  usecase "Monitor Adherence" as UC_Monitor
+  usecase "Create Prescription" as UC_Prescribe
+}
+
+Patient --> UC_Register
+Patient --> UC_Scan
+UC_Scan --> UC_OCR : include
+UC_OCR --> UC_AI : include
+Patient --> UC_Edit
+UC_OCR --> UC_Edit : extend
+Patient --> UC_Schedule
+Patient --> UC_Meal
+UC_Meal --> UC_Schedule : include
+Patient --> UC_Notify
+Patient --> UC_TTS
+Patient --> UC_History
+Patient --> UC_Offline
+Patient --> UC_TG
+UC_Schedule --> UC_Notify : include
+UC_Schedule --> UC_TTS : include
+UC_Schedule --> UC_TG : extend
+
+Doctor --> UC_Register
+Doctor --> UC_Prescribe
+Doctor --> UC_Monitor
+UC_Prescribe --> UC_TG : extend
+
+Caregiver --> UC_Register
+Caregiver --> UC_Monitor
+Caregiver --> UC_TG
+
+Telegram --> UC_TG
+
+@enduml

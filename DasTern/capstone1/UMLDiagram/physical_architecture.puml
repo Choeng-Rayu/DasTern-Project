@@ -1,0 +1,73 @@
+@startuml PhysicalArchitecture
+skinparam backgroundColor #83b1a7ff
+skinparam componentStyle rectangle
+skinparam nodeStyle rectangle
+
+title DasTern - Physical Architecture (Three-Layers Pattern)
+
+package "Client Layer" #E3F2FD {
+    node "Mobile App" {
+        component [Flutter App\n(Android/iOS)] as flutter
+        database "SQLite\n(Offline Storage)" as sqlite
+        component [Camera\nIntegration] as camera
+        component [Notification\nScheduler] as scheduler
+    }
+}
+
+package "Server Layer" #C8E6C9 {
+    node "Backend API" {
+        ' component [Node.js\nRuntime] as nodejs
+        component [Node.js\nAPI Routes] as nextjs
+        node "Services" {
+            component [Authentication] as auth
+            component [Scheduling Logic] as schedlogic
+            component [OCR/AI\nIntegration] as ocrai
+        }
+    }
+}
+
+package "Data Layer" #E1BEE7 {
+    database "MySQL\nDatabase" as mysql {
+        frame "Data" {
+            [Users]
+            [Prescriptions]
+            [Medications]
+            [Reminders]
+            ' [Appointments]
+        }
+    }
+}
+
+cloud "External Services" #FFF9C4 {
+    component [Document AI\n(Google Cloud)] as docai
+    component [Tesseract OCR\n(Alternative)] as tesseract
+    component [DeepSeek\nVision API] as deepseek
+    component [Telegram\nBot API] as telegram
+}
+
+' Connections - Client to Server
+flutter -down-> nextjs : HTTPS/REST API
+camera -down-> nextjs : Upload Image
+scheduler -down-> nextjs : Sync Schedule
+
+' Server to Data
+nextjs -down-> mysql : Query/Store Data
+auth -down-> mysql
+schedlogic -down-> mysql
+ocrai -down-> mysql
+
+' Server to External Services
+nextjs -right-> docai : OCR Request
+nextjs -right-> tesseract : OCR Request
+nextjs -right-> deepseek : AI Enhancement
+nextjs -right-> telegram : Send Notification
+
+' External to Client
+telegram -up-> flutter : Family Alert
+deepseek -up-> nextjs : Enhanced Text
+docai -up-> nextjs : Extracted Text
+
+' Local storage
+flutter -down-> sqlite : Store/Retrieve\n(Offline Mode)
+
+@enduml

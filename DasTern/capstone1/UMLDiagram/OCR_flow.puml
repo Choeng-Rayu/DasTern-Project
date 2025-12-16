@@ -1,0 +1,102 @@
+@startuml OCR_Architecture
+!theme vibrant
+skinparam backgroundColor #f4f6fb
+skinparam componentStyle rectangle
+skinparam nodeStyle rectangle
+skinparam rectangle {
+    BackgroundColor #ffffff
+    BorderColor #4f81bd
+    BorderThickness 2
+}
+skinparam component {
+    BackgroundColor #ffffff
+    BorderColor #333333
+    BorderThickness 1.5
+}
+' skinparam linetype ortho
+skinparam arrow {
+    color #4f81bd
+    thickness 2
+}
+
+title DasTern - OCR Architecture Workflow\n**Automated Prescription Processing Pipeline**
+
+node "DasTern - OCR Architecture Workflow\n**Automated Prescription Processing Pipeline**" #C8E6C9 {
+    node "Layer Image Acquisition" #E3F2FD {
+        component [Patient Captures\nPrescription] as capture #BBDEFB
+        note right of capture
+            User takes photo of
+            prescription with mobile camera
+        end note
+    }
+    component [OCR Option] as rawtext #66BB6A
+    Node "OCR Engines" #eaebd9ff {
+        component [Document AI\n(Primary)] as docai #4CAF50
+        component [Tesseract OCR\n(Alternative)] as tesseract #388E3C
+    }
+    
+    node "Layer Data Structuring" #FFE0B2 {
+        component [Convert to\nJSON Format/Validation] as json #FFCC80
+    
+        ' component [Validate\nInformation] as validate #FFB74D
+        note right of json
+            Formats data into
+            structured format
+        end note
+        node "Layer AI Enhancement" #FFF9C4 {
+            component [DeepSeek] as deepseek #FFF59D
+            note right of deepseek
+                At this stage,
+                We also concern about 
+                privacy of patient data 
+                that we send to deepseek as well.
+            end note
+            note right of deepseek
+                AI cleans & standardizes
+                extracted text for accuracy
+            end note
+        }
+    }
+    note right of rawtext
+        At this stage, we are evaluating both OCR models.
+        The final choice will be determined during implementation.
+        We concern about privacy of patient data as well.
+    end note
+    node "Layer User Review" #E1BEE7 {
+        component [Display to\nEditing] as display #CE93D8
+        ' component [Display\nEditing] as edit #BA68C8
+        note right of display
+            Patient reviews & confirms
+            extracted medication details
+        end note
+        node "Layer Reminder Generation" #FFCDD2 {
+            component [Calculate Reminder Times\n(Based on Meal Schedule)] as calculate #EF9A9A
+            component [Store Schedule\n(Local + Server)] as store #E57373
+        }
+    }    
+}
+
+
+capture --> rawtext : Direct Send
+
+rawtext --> docai : Option 1
+rawtext --> tesseract : Option 2
+docai --> json : Send Raw Text
+tesseract --> deepseek : Send Raw Text
+
+deepseek --> json : Extract Structure
+legend bottom
+    |<#E3F2FD> Input Stage       |
+    |<#C8E6C9> Processing Stage  |
+    |<#FFF9C4> Enhancement Stage |
+    |<#FFE0B2> Validation Stage  |
+    |<#E1BEE7> Review Stage      |
+    |<#FFCDD2> Output Stage      |
+endlegend
+json --> display : Check Validity
+
+' validate --> display : Show Results
+display --> calculate : Patient Confirms
+calculate --> store : Save & Sync Schedule
+
+@enduml

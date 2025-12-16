@@ -1,0 +1,126 @@
+@startuml
+!theme vibrant
+skinparam backgroundColor #FEFEFE
+skinparam activityBackgroundColor #E3F2FD
+skinparam activityBorderColor #1976D2
+
+title DasTern Activity Diagram - Prescription Scanning & Reminder Generation
+
+|Patient|
+start
+:Open DasTern App;
+:Navigate to Scan Prescription;
+:Position camera over prescription;
+:Capture prescription image;
+
+|System|
+:Receive prescription image;
+:Preprocess image
+(enhance contrast, reduce noise);
+
+|OCR Engine|
+:Detect text regions;
+:Perform character recognition;
+:Extract raw text;
+
+|System|
+if (OCR quality acceptable?) then (yes)
+  :Send raw text to AI enhancer;
+  
+  |AI Enhancement|
+  :Correct spelling errors;
+  :Standardize medical terms;
+  :Identify medicine attributes;
+  :Structure data (name, dosage, frequency);
+  
+  |System|
+  :Display structured medication data;
+else (no)
+  :Show error message;
+  stop
+endif
+
+|Patient|
+:Review extracted data;
+if (Data correct?) then (yes)
+  :Confirm medication details;
+else (no)
+  :Manually edit details;
+  :Save corrections;
+endif
+
+:Enter meal times
+(breakfast, lunch, dinner);
+
+|System|
+:Calculate reminder schedule
+based on meal times and frequency;
+:Generate reminder notifications;
+:Store schedule locally;
+
+fork
+  :Set up in-app notifications;
+fork again
+  if (Family notification enabled?) then (yes)
+    |Telegram Bot|
+    :Configure Telegram alerts;
+  else (no)
+  endif
+end fork
+
+|Patient|
+:View medication schedule;
+:Receive first reminder notification;
+
+note right
+  **Example Schedule:**
+  Medicine: Paracetamol
+  Frequency: 3x/day
+  Timing: After meal
+  
+  **Generated Reminders:**
+  08:15 AM (after breakfast)
+  01:15 PM (after lunch)
+  07:45 PM (after dinner)
+end note
+
+|System|
+repeat
+  :Wait for scheduled time;
+  :Trigger notification;
+  
+  fork
+    :Display in-app reminder;
+  fork again
+    :Play Khmer voice reminder;
+  fork again
+    if (Family linked?) then (yes)
+      |Telegram Bot|
+      :Send notification to family;
+    endif
+  end fork
+  
+  |Patient|
+  :View reminder;
+  if (Take medication?) then (yes)
+    :Mark as taken;
+  else (no, missed)
+    :Log as missed dose;
+    
+    |System|
+    if (Family monitoring active?) then (yes)
+      |Telegram Bot|
+      :Alert family of missed dose;
+    endif
+  endif
+  
+repeat while (More scheduled doses?) is (yes)
+->no;
+
+|Patient|
+:View medication history;
+:Check adherence stats;
+
+stop
+
+@enduml
