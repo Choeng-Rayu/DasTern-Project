@@ -1,179 +1,343 @@
-@startuml
+@startuml SequenceDiagram
 !theme vibrant
-skinparam backgroundColor #FEFEFE
+skinparam backgroundColor #f5f5f5
+skinparam shadowing true
+
+' Participant/Actor colors
+skinparam actorBackgroundColor #81c784
+skinparam actorBorderColor #388e3c
+skinparam actorFontColor #ffffff
+
+' Participant colors
+skinparam participantBackgroundColor #64b5f6
+skinparam participantBorderColor #1976d2
+skinparam participantFontColor #ffffff
+
+' Database colors
+skinparam databaseBackgroundColor #ffb74d
+skinparam databaseBorderColor #f57c00
+skinparam databaseFontColor #ffffff
+
+' Arrow colors
+skinparam arrowColor #424242
+skinparam arrowThickness 2
+
+' Message styling
 skinparam sequenceMessageAlign center
+skinparam sequenceDividerBackgroundColor #e0e0e0
+skinparam sequenceMessageFontSize 11
+skinparam noteBackgroundColor #fff9c4
+skinparam noteBorderColor #fbc02d
+skinparam noteFontColor #333333
 
-title DasTern Sequence Diagram - Complete Medication Reminder Flow
+' Alt/Else styling
+skinparam altBackgroundColor #ffe0b2
+skinparam altBorderColor #ff6f00
 
-actor Patient as patient
-participant "Mobile App\n(Flutter)" as app #LightBlue
-participant "Camera" as camera #LightGray
-participant "OCR Service\n(Document AI)" as ocr #LightYellow
-participant "AI Enhancement\n(DeepSeek)" as ai #LightPink
-participant "Backend API\n(Node.js)" as backend #LightGreen
-database "Local Storage\n(SQLite)" as db #LightCoral
-participant "Notification\nScheduler" as scheduler #Lavender
-participant "Telegram Bot" as telegram #LightCyan
-actor "Family Member" as family
+title DasTern Sequence Diagram - Medication Reminder Flow
 
-== Prescription Scanning Phase ==
+actor Patient as patient #81c784
+participant "Mobile App" as app #64b5f6
+participant "Camera" as camera #90caf9
+participant "OCR Service" as ocr #ffb74d
+participant "AI Engine" as ai #81c784
+participant "Backend API" as backend #4fc3f7
+database "Local Storage" as db #ffb74d
+participant "Scheduler" as scheduler #7e57c2
+participant "Telegram Bot" as telegram #26c6da
+' actor "Family" as family #ff7043
 
-patient -> app: Open "Scan Prescription"
+== Prescription Scanning ==
+
+box #c8e6c9
+participant "Mobile App" as app
+participant "Camera" as camera
+participant "OCR Service" as ocr
+end box
+patient -> app: Open Scan
 activate app
-
-app -> camera: Launch camera interface
+app -> camera: Launch camera
 activate camera
-camera --> app: Camera ready
-
-patient -> camera: Capture prescription image
-camera --> app: Return image data
+camera --> app: Ready
+patient -> camera: Capture image
+camera --> app: Return image
 deactivate camera
 
-app -> app: Validate image quality
-note right: Check brightness,\nclarity, resolution
-
-app -> ocr: Send prescription image
+app -> ocr: Send image
 activate ocr
-ocr -> ocr: Preprocess image\n(contrast, noise reduction)
-ocr -> ocr: Detect text regions
-ocr -> ocr: Perform OCR recognition
-ocr --> app: Return raw extracted text
+ocr --> app: Extract text
 deactivate ocr
 
-note over app
-  Raw text may contain:
-  - Spelling errors
-  - Inconsistent spacing
-  - Abbreviations
-end note
+== Text Enhancement ==
 
-== AI Text Enhancement Phase ==
-
-app -> ai: Send raw OCR text
+box #bbdefb
+participant "AI Engine" as ai
+end box
+app -> ai: Send OCR text
 activate ai
-ai -> ai: Correct spelling errors
-ai -> ai: Standardize medical terms
-ai -> ai: Parse medication details
-ai -> ai: Structure data (JSON format)
-ai --> app: Return structured medication data
+ai --> app: Structured data
 deactivate ai
+app --> patient: Display results
+patient -> app: Confirm/Edit
 
-note over app
-  Structured output:
-  {
-    "medicine_name": "Paracetamol",
-    "dosage": "500mg",
-    "frequency": "3 times/day",
-    "timing": "after meal",
-    "duration": "7 days"
-  }
-end note
+== Schedule Setup ==
 
-app --> patient: Display extracted medication
-patient -> app: Review and confirm/edit data
+box #e1bee7
+end box
+app -> patient: Enter meal times
+patient -> app: Provide times
 
-== Meal Time Input Phase ==
+== Reminder Generation ==
 
-app -> patient: Request meal schedule
-patient -> app: Enter meal times\n(Breakfast: 08:00, Lunch: 13:00, Dinner: 19:30)
-
-== Reminder Generation Phase ==
-
-app -> backend: Send medication data + meal times
+box #ffe0b2
+participant "Backend API" as backend
+participant "Scheduler" as scheduler
+database "Local Storage" as db
+end box
+app -> backend: Send medication + times
 activate backend
-
-backend -> backend: Calculate reminder schedule
-note right
-  Example calculation:
-  Medicine: 3x/day after meal
-  
-  Reminders:
-  08:15 (breakfast + 15 min)
-  13:15 (lunch + 15 min)
-  19:45 (dinner + 15 min)
-end note
-
-backend -> db: Store medication schedule
+backend -> db: Store schedule
 activate db
-db --> backend: Confirm storage
+db --> backend: Saved
 deactivate db
-
-backend --> app: Return reminder schedule
+backend --> app: Return schedule
 deactivate backend
 
-app -> scheduler: Register reminder notifications
+app -> scheduler: Register reminders
 activate scheduler
-scheduler --> app: Notifications scheduled
+scheduler --> app: Scheduled
 deactivate scheduler
 
-app -> db: Save schedule locally (offline support)
-activate db
-db --> app: Saved successfully
-deactivate db
+== Notifications ==
 
-app --> patient: Show confirmation & schedule
-
-== Notification Phase (At Scheduled Time) ==
-
-scheduler -> app: Trigger reminder (08:15 AM)
-activate scheduler
+box #f8bbd0
+participant "Telegram Bot" as telegram
+end box
+scheduler -> app: Trigger reminder
 activate app
-
-app -> app: Display in-app notification
-app -> app: Play Khmer TTS voice reminder
-
-app --> patient: Show notification:\n"Time to take Paracetamol 500mg"
+app -> app: Show notification
+app --> patient: Display reminder
 
 alt Family monitoring enabled
-    app -> backend: Notify reminder triggered
-    activate backend
-    backend -> telegram: Send notification to family
+    app -> telegram: Send notification
     activate telegram
-    telegram -> family: "Patient has medication reminder"
+    telegram -> family: Alert
     deactivate telegram
-    deactivate backend
 end
 
-patient -> app: Mark as "Taken" or ignore
+patient -> app: Mark taken/missed
 
 alt Medication taken
-    app -> db: Log medication as taken
+    app -> db: Log taken
     activate db
     db --> app: Updated
     deactivate db
-    app -> backend: Update adherence record
-    activate backend
-    backend --> app: Confirmed
-    deactivate backend
-else Medication missed (30 min passed)
-    app -> db: Log as missed dose
+else Medication missed
+    app -> db: Log missed
     activate db
     db --> app: Updated
     deactivate db
     
     alt Family alert enabled
-        app -> backend: Send missed dose alert
-        activate backend
-        backend -> telegram: Alert family
+        app -> telegram: Alert family
         activate telegram
-        telegram -> family: "⚠️ Patient missed dose at 08:15 AM"
+        telegram -> family: ⚠️ Missed dose
         deactivate telegram
-        deactivate backend
     end
 end
 
 deactivate app
 deactivate scheduler
 
-== View History Phase ==
+== History View ==
 
-patient -> app: Open "Medication History"
+box #b2dfdb
+end box
+patient -> app: Open history
 activate app
-app -> db: Fetch medication records
+app -> db: Fetch records
 activate db
-db --> app: Return history data
+db --> app: Return data
 deactivate db
-app --> patient: Display:\n- Taken doses\n- Missed doses\n- Adherence percentage
+app --> patient: Display history
 deactivate app
 
 @enduml
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+' @startuml SequenceDiagram'
+' !theme vibrant
+' skinparam backgroundColor #f5f5f5
+' skinparam shadowing true
+
+' ' Participant/Actor colors
+' skinparam actorBackgroundColor #81c784
+' skinparam actorBorderColor #388e3c
+' skinparam actorFontColor #ffffff
+
+' ' Participant colors
+' skinparam participantBackgroundColor #64b5f6
+' skinparam participantBorderColor #1976d2
+' skinparam participantFontColor #ffffff
+
+' ' Database colors
+' skinparam databaseBackgroundColor #ffb74d
+' skinparam databaseBorderColor #f57c00
+' skinparam databaseFontColor #ffffff
+
+' ' Arrow colors
+' skinparam arrowColor #424242
+' skinparam arrowThickness 2
+
+' ' Message styling
+' skinparam sequenceMessageAlign center
+' skinparam sequenceDividerBackgroundColor #e0e0e0
+' skinparam sequenceMessageFontSize 11
+' skinparam noteBackgroundColor #fff9c4
+' skinparam noteBorderColor #fbc02d
+' skinparam noteFontColor #333333
+
+' ' Alt/Else styling
+' skinparam altBackgroundColor #ffe0b2
+' skinparam altBorderColor #ff6f00
+
+' title DasTern Sequence Diagram - Medication Reminder Flow
+
+' actor Patient as patient #81c784
+' participant "Mobile App" as app #64b5f6
+' participant "Camera" as camera #90caf9
+' participant "OCR Service" as ocr #ffb74d
+' participant "AI Engine" as ai #81c784
+' participant "Backend API" as backend #4fc3f7
+' database "Local Storage" as db #ffb74d
+' participant "Scheduler" as scheduler #7e57c2
+' participant "Telegram Bot" as telegram #26c6da
+' actor "Family" as family #ff7043
+
+' == Prescription Scanning ==
+
+' box #e8f5e9
+' patient -> app: Open Scan
+' activate app
+' app -> camera: Launch camera
+' activate camera
+' camera --> app: Ready
+' patient -> camera: Capture image
+' camera --> app: Return image
+' deactivate camera
+
+' app -> ocr: Send image
+' activate ocr
+' ocr --> app: Extract text
+' deactivate ocr
+' end box
+
+' == Text Enhancement ==
+
+' box #bbdefb
+' app -> ai: Send OCR text
+' activate ai
+' ai --> app: Structured data
+' deactivate ai
+' app --> patient: Display results
+' patient -> app: Confirm/Edit
+' end box
+
+' == Schedule Setup ==
+
+' box #f3e5f5
+' app -> patient: Enter meal times
+' patient -> app: Provide times
+' end box
+
+' == Reminder Generation ==
+
+' box #fff3e0
+' app -> backend: Send medication + times
+' activate backend
+' backend -> db: Store schedule
+' activate db
+' db --> backend: Saved
+' deactivate db
+' backend --> app: Return schedule
+' deactivate backend
+
+' app -> scheduler: Register reminders
+' activate scheduler
+' scheduler --> app: Scheduled
+' deactivate scheduler
+' end box
+
+' == Notifications ==
+
+' box #fce4ec
+' scheduler -> app: Trigger reminder
+' activate app
+' app -> app: Show notification
+' app --> patient: Display reminder
+
+' alt Family monitoring enabled
+'     app -> telegram: Send notification
+'     activate telegram
+'     telegram -> family: Alert
+'     deactivate telegram
+' end
+
+' patient -> app: Mark taken/missed
+
+' alt Medication taken
+'     app -> db: Log taken
+'     activate db
+'     db --> app: Updated
+'     deactivate db
+' else Medication missed
+'     app -> db: Log missed
+'     activate db
+'     db --> app: Updated
+'     deactivate db
+    
+'     alt Family alert enabled
+'         app -> telegram: Alert family
+'         activate telegram
+'         telegram -> family: ⚠️ Missed dose
+'         deactivate telegram
+'     end
+' end
+
+' deactivate app
+' deactivate scheduler
+' end box
+
+' == History View ==
+
+' box #e0f2f1
+' patient -> app: Open history
+' activate app
+' app -> db: Fetch records
+' activate db
+' db --> app: Return data
+' deactivate db
+' app --> patient: Display history
+' deactivate app
+' end box
+
+' @enduml

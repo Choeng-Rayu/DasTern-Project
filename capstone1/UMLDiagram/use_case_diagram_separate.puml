@@ -1,22 +1,33 @@
 @startuml UseCase
 ' Use case diagram for DasTern medication adherence app
-skinparam backgroundColor #f4f6fb
+skinparam backgroundColor #ffffff
 skinparam actorStyle awesome
 skinparam rectangle {
   BackgroundColor #ffffff
   BorderColor #4f81bd
+  roundCorner 15
+  shadowing true
 }
 skinparam usecase {
   BackgroundColor #e6eef9
   BorderColor #4f81bd
+  shadowing true
+}
+skinparam node {
+  BackgroundColor<<container>> #e8f5e9
+  BorderColor<<container>> #43a047
+  roundCorner 20
+  shadowing true
+  FontSize 14
+  FontStyle bold
 }
 
-actor Patient
-actor Doctor
-actor Family as Caregiver
-actor "Telegram Bot" as Telegram
+actor Patient #4fc3f7
+actor Doctor #81c784
+actor Family as Caregiver #ffb74d
+' actor "Telegram Bot" as Telegram
 
-rectangle DasTern {
+node DasTern <<container>> {
   usecase "Register / Login" as UC_Register
   usecase "Scan Prescription" as UC_Scan
   usecase "OCR Extract Medication" as UC_OCR
@@ -28,38 +39,38 @@ rectangle DasTern {
   usecase "Khmer TTS Reminder" as UC_TTS
   usecase "View Medication History" as UC_History
   usecase "Offline Access" as UC_Offline
-  usecase "Notify Family (Telegram)" as UC_TG
+  usecase "Notify Family (Telegram/App)" as UC_TG
   usecase "Monitor Adherence" as UC_Monitor
   usecase "Create Prescription" as UC_Prescribe
 }
 
-Patient --> UC_Register
-Patient --> UC_Scan
+Patient -[#4fc3f7,thickness=2]-> UC_Register
+Patient -[#4fc3f7,thickness=2]-> UC_Scan
 UC_Scan --> UC_OCR : include
 UC_OCR --> UC_AI : include
-Patient --> UC_Edit
+Patient -[#4fc3f7,thickness=2]-> UC_Edit
 UC_OCR --> UC_Edit : extend
-Patient --> UC_Schedule
-Patient --> UC_Meal
+Patient -[#4fc3f7,thickness=2]-> UC_Schedule
+Patient -[#4fc3f7,thickness=2]-> UC_Meal
 UC_Meal --> UC_Schedule : include
-Patient --> UC_Notify
-Patient --> UC_TTS
-Patient --> UC_History
-Patient --> UC_Offline
-Patient --> UC_TG
+Patient -[#4fc3f7,thickness=2]-> UC_Notify
+Patient -[#4fc3f7,thickness=2]-> UC_TTS
+Patient -[#4fc3f7,thickness=2]-> UC_History
+Patient -[#4fc3f7,thickness=2]-> UC_Offline
+Patient -[#4fc3f7,thickness=2]-> UC_TG
 UC_Schedule --> UC_Notify : include
 UC_Schedule --> UC_TTS : include
 UC_Schedule --> UC_TG : extend
 
-Doctor --> UC_Register
-Doctor --> UC_Prescribe
-Doctor --> UC_Monitor
+Doctor -[#81c784,thickness=2]-> UC_Register
+Doctor -[#81c784,thickness=2]-> UC_Prescribe
+Doctor -[#81c784,thickness=2]-> UC_Monitor
 UC_Prescribe --> UC_TG : extend
 
-Caregiver --> UC_Register
-Caregiver --> UC_Monitor
-Caregiver --> UC_TG
+Caregiver -[#ffb74d,thickness=2]-> UC_Register
+Caregiver -[#ffb74d,thickness=2]-> UC_Monitor
+Caregiver -[#ffb74d,thickness=2]-> UC_TG
 
-Telegram --> UC_TG
+' Telegram --> UC_TG
 
 @enduml

@@ -1,0 +1,82 @@
+@startuml
+!theme vibrant
+skinparam backgroundColor #ffffff
+skinparam shadowing true
+
+' Activity colors
+skinparam activityBackgroundColor #4fc3f7
+skinparam activityBorderColor #0288d1
+skinparam activityBorderThickness 2
+skinparam activityFontColor #ffffff
+skinparam activityFontSize 12
+skinparam activityFontStyle bold
+
+' Decision/condition colors
+skinparam activityDiamondBackgroundColor #ffb74d
+skinparam activityDiamondBorderColor #f57c00
+skinparam activityDiamondFontColor #ffffff
+
+' Arrow colors
+skinparam arrowColor #424242
+skinparam arrowThickness 2
+
+' Partition/swimlane colors
+skinparam partitionBackgroundColor #e8f5e9
+skinparam partitionBorderColor #43a047
+skinparam partitionBorderThickness 2
+
+' Start/Stop colors
+skinparam activityStartColor #81c784
+skinparam activityEndColor #e57373
+skinparam activityBarColor #9575cd
+
+title DasTern Activity Diagram - Core Flow
+title (Patient Workflow)
+
+|Patient|
+start
+:Open DasTern App;
+:Capture prescription image;
+
+|System|
+:Process image with OCR;
+:AI enhancement & data extraction;
+
+if (Processing successful?) then (yes)
+  :Display medication data;
+else (no)
+  :Show error message;
+  stop
+endif
+
+|Patient|
+if (Data correct?) then (yes)
+  :Confirm details;
+else (no)
+  :Edit medication details;
+endif
+
+' :Enter meal times;
+
+|System|
+:Generate reminder schedule;
+:Set up notifications;
+
+|Patient|
+repeat
+  |System|
+  :Trigger scheduled reminder;
+  
+  |Patient|
+  if (Take medication?) then (yes)
+    :Mark as taken;
+  else (no)
+    :Log as missed;
+  endif
+  
+repeat while (More doses?) is (yes)
+->no;
+
+stop
+
+@enduml

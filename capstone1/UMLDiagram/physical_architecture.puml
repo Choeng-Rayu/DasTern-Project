@@ -39,10 +39,12 @@ package "Data Layer" #E1BEE7 {
 }
 
 cloud "External Services" #FFF9C4 {
-    component [Document AI\n(Google Cloud)] as docai
-    component [Tesseract OCR\n(Alternative)] as tesseract
-    component [DeepSeek\nVision API] as deepseek
-    component [Telegram\nBot API] as telegram
+    node "External Services Node" {
+        component [Document AI\n(Google Cloud)] as docai
+        component [Tesseract OCR\n(Alternative)] as tesseract
+        component [DeepSeek\nVision API] as deepseek
+        component [Telegram\nBot API] as telegram
+    }
 }
 
 ' Connections - Client to Server

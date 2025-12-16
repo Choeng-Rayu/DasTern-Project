@@ -1,0 +1,82 @@
+@startuml Activity
+!theme vibrant
+skinparam backgroundColor #ffffff
+skinparam shadowing true
+
+' Activity styling
+skinparam activityBackgroundColor #81c784
+skinparam activityBorderColor #388e3c
+skinparam activityBorderThickness 2
+skinparam activityFontColor #ffffff
+skinparam activityFontSize 12
+skinparam activityFontStyle bold
+
+' Decision styling
+skinparam activityDiamondBackgroundColor #ffb74d
+skinparam activityDiamondBorderColor #f57c00
+skinparam activityDiamondFontColor #ffffff
+
+' Partition styling
+skinparam partitionBackgroundColor #e3f2fd
+skinparam partitionBorderColor #1976d2
+skinparam partitionBorderThickness 2
+
+' Start/Stop styling
+skinparam activityStartColor #66bb6a
+skinparam activityEndColor #ef5350
+skinparam activityBarColor #7e57c2
+
+' Arrow styling
+skinparam arrowColor #424242
+skinparam arrowThickness 2
+
+title DasTern Doctor Activity Diagram - Simplified Workflow
+
+|#81c784|Doctor|
+start
+:Login & Access Dashboard;
+
+partition "Patient Management" {
+    :View Patient List;
+    :Select Patient;
+}
+
+if (Alert check?) then (yes)
+    :Review Non-Adherent Patients;
+else (no)
+endif
+
+partition "Create/Update Prescription" {
+    if (New visit?) then (yes)
+        :Enter Medication Details;
+        :Submit Prescription;
+    else (follow-up)
+        :Review Adherence Report;
+        if (Treatment working?) then (yes)
+            :Extend/Complete Treatment;
+        else (no)
+            :Modify Prescription;
+        endif
+    endif
+}
+
+partition "Documentation" {
+    :Update Patient Records;
+    :Add Consultation Notes;
+}
+
+if (Schedule next visit?) then (yes)
+    ' :Create Appointment;
+else (no)
+endif
+:Return to Dashboard;
+stop
+' if (More patients?) then (yes)
+'     :Select Next Patient; 
+
+' else (no)
+'     :Return to Dashboard;
+'     stop
+' endif
+
+@enduml
