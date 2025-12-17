@@ -1,113 +1,83 @@
-@startuml
-!theme vibrant
-skinparam backgroundColor #FEFEFE
+
+
+
+
+@startuml UseCase
+' Use case diagram for DasTern medication adherence app
+skinparam backgroundColor #ffffff
 skinparam actorStyle awesome
-skinparam packageStyle rectangle
-
-title DasTern System - Use Case Diagram
-
-left to right direction
-
-actor Patient as patient #LightBlue
-actor "Family Member" as family #LightGreen
-actor Doctor as doctor #LightCoral
-actor "OCR System" as ocr #LightYellow
-actor "Telegram Bot" as telegram #LightPink
-
-rectangle "DasTern Mobile Application" {
-  
-  package "Patient Features" #AliceBlue {
-    usecase (Register and Login) as UC1
-    usecase (Scan Prescription) as UC2
-    usecase (Extract Medication Data) as UC3
-    usecase (Edit Medication Details) as UC4
-    usecase (Generate Reminder Schedule) as UC5
-    usecase (Receive Notifications) as UC6
-    usecase (Voice Reminder) as UC7
-    usecase (View Medication History) as UC8
-    usecase (Offline Access) as UC9
-    usecase (Notification Control) as UC10
-    usecase (Set Meal Times) as UC11
-  }
-  
-  package "Doctor Features" #LightYellow {
-    usecase (View Patient List) as UC12
-    usecase (Create Prescription) as UC13
-    usecase (View Patient Records) as UC14
-    usecase (Monitor Adherence) as UC15
-  }
-  
-  package "Family Features" #LightGreen {
-    usecase (Link to Patient) as UC16
-    usecase (View Patient Status) as UC17
-    usecase (Receive Alerts) as UC18
-    usecase (View Medication Log) as UC19
-  }
-  
-  package "System Features" #LightGray {
-    usecase (Process OCR) as UC20
-    usecase (Enhance Text with AI) as UC21
-    usecase (Send Telegram Notification) as UC22
-    usecase (Schedule Reminders) as UC23
-  }
+skinparam rectangle {
+  BackgroundColor #ffffff
+  BorderColor #4f81bd
+  roundCorner 15
+  shadowing true
+}
+skinparam usecase {
+  BackgroundColor #e6eef9
+  BorderColor #4f81bd
+  shadowing true
+}
+skinparam node {
+  BackgroundColor<<container>> #e8f5e9
+  BorderColor<<container>> #43a047
+  roundCorner 20
+  shadowing true
+  FontSize 14
+  FontStyle bold
 }
 
-' Patient relationships
-patient --> UC1
-patient --> UC2
-patient --> UC4
-patient --> UC6
-patient --> UC7
-patient --> UC8
-patient --> UC9
-patient --> UC10
-patient --> UC11
+actor Patient #4fc3f7
+actor Doctor #81c784
+actor Family as Caregiver #ffb74d
+' actor "Telegram Bot" as Telegram
 
-' Doctor relationships
-doctor --> UC12
-doctor --> UC13
-doctor --> UC14
-doctor --> UC15
+node DasTern <<container>> {
+  usecase "Register / Login" as UC_Register
+  usecase "Scan Prescription" as UC_Scan
+  usecase "OCR Extract Medication" as UC_OCR
+  usecase "AI Clean Text" as UC_AI
+  usecase "Edit Medication Details" as UC_Edit
+  usecase "Generate Reminder Schedule" as UC_Schedule
+  usecase "Set Meal Times" as UC_Meal
+  usecase "Receive In-App Notification" as UC_Notify
+  usecase "Khmer TTS Reminder" as UC_TTS
+  usecase "View Medication History" as UC_History
+  usecase "Offline Access" as UC_Offline
+  usecase "Notify Family (Telegram/App)" as UC_TG
+  usecase "Monitor Adherence" as UC_Monitor
+  usecase "Create Prescription" as UC_Prescribe
+  usecase "Patients List/Record" as UC12
 
-' Family relationships
-family --> UC16
-family --> UC17
-family --> UC18
-family --> UC19
+}
 
-' System relationships
-UC2 ..> UC20 : <<include>>
-UC20 ..> UC3 : <<include>>
-UC3 ..> UC21 : <<include>>
-UC11 ..> UC5 : <<include>>
-UC3 ..> UC5 : <<include>>
-UC5 ..> UC23 : <<include>>
-UC6 ..> UC22 : <<extend>>
-UC18 ..> UC22 : <<include>>
+Patient -[#4fc3f7,thickness=2]-> UC_Register
+Patient -[#4fc3f7,thickness=2]-> UC_Scan
+UC_Scan --> UC_OCR : include
+UC_OCR --> UC_AI : include
+Patient -[#4fc3f7,thickness=2]-> UC_Edit
+UC_OCR --> UC_Edit : extend
+Patient -[#4fc3f7,thickness=2]-> UC_Schedule
+Patient -[#4fc3f7,thickness=2]-> UC_Meal
+UC_Meal --> UC_Schedule : include
+Patient -[#4fc3f7,thickness=2]-> UC_Notify
+Patient -[#4fc3f7,thickness=2]-> UC_TTS
+Patient -[#4fc3f7,thickness=2]-> UC_History
+Patient -[#4fc3f7,thickness=2]-> UC_Offline
+Patient -[#4fc3f7,thickness=2]-> UC_TG
+UC_Schedule --> UC_Notify : include
+UC_Schedule --> UC_TTS : include
+UC_Schedule --> UC_TG : extend
 
-' External system interactions
-ocr --> UC20
-telegram --> UC22
+Doctor -[#81c784,thickness=2]-> UC12
+Doctor -[#81c784,thickness=2]-> UC_Register
+Doctor -[#81c784,thickness=2]-> UC_Prescribe
+Doctor -[#81c784,thickness=2]-> UC_Monitor
+UC_Prescribe --> UC_TG : extend
 
-' Notes
-note right of UC2
-  Uses device camera
-  to capture prescription
-end note
+Caregiver -[#ffb74d,thickness=2]-> UC_Register
+Caregiver -[#ffb74d,thickness=2]-> UC_Monitor
+Caregiver -[#ffb74d,thickness=2]-> UC_TG
 
-note right of UC3
-  Automatic extraction
-  using OCR + AI
-end note
-
-note right of UC7
-  Khmer Text-to-Speech
-  for accessibility
-end note
-
-note bottom of UC22
-  Optional notifications
-  for family monitoring
-end note
+' Telegram --> UC_TG
 
 @enduml

@@ -1,102 +1,229 @@
-@startuml OCR_Architecture
+' @startuml
+' !theme vibrant
+' skinparam backgroundColor #FEFEFE
+' skinparam componentStyle rectangle
+' skinparam ArrowColor #1976D2
+
+' title DasTern OCR Processing Flow (Core Focus)
+
+' package "Input" #E3F2FD {
+'     component "Preprocessed Image" as input #90CAF9 {
+'         [Optimized Image]
+'         [Enhanced Contrast]
+'         [Noise Removed]
+'     }
+' }
+
+' package "OCR Processing Layer" #FFCCBC {
+    
+'     component "OCR Router" as router #FFAB91 {
+'         [Service Selector]
+'         [Load Balancer]
+'         [Fallback Handler]
+'     }
+    
+'     note right of router
+'         **Router Logic:**
+'         1. Select primary OCR service
+'         2. Send image for processing
+'         3. If failure, retry with alternative
+'         4. Return best result
+'     end note
+    
+'     package "Primary OCR Service" #FFE0B2 {
+'         cloud "Google Document AI" as docai #FF9800 {
+'             rectangle "Processing Steps" {
+'                 [1. Text Detection]
+'                 [2. Layout Analysis]
+'                 [3. Character Recognition]
+'                 [4. Confidence Scoring]
+'             }
+'         }
+        
+'         note bottom of docai
+'             **Strengths:**
+'             ✓ Fast (cloud-based)
+'             ✓ High accuracy
+'             ✓ No training needed
+'             ✓ Handles complex layouts
+            
+'             **Output:**
+'             Raw extracted text
+'             + Confidence scores
+            
+'             ⚠️ **Privacy Concern:**
+'             Sends patient data to
+'             external third-party service
+'         end note
+'     }
+    
+'     package "Alternative OCR Service" #DCEDC8 {
+'         component "Tesseract OCR" as tesseract #8BC34A {
+'             rectangle "Processing Steps " {
+'                 [1. Image Analysis]
+'                 [2. Pattern Recognition]
+'                 [3. Language Models]
+'                 [4. Text Extraction]
+'             }
+'         }
+        
+'         note bottom of tesseract
+'             **Strengths:**
+'             ✓ Offline capable
+'             ✓ Customizable
+'             ✓ Khmer language support
+'             ✓ No API costs
+            
+'             **Output:**
+'             Raw extracted text
+'             + Line/word positions
+            
+'             ✅ **Privacy Advantage:**
+'             Processes locally on device
+'             No data sent to third parties
+'             Full data privacy control
+'         end note
+'     }
+    
+'     component "Result Aggregator" as aggregator #FF8A65 {
+'         [Parse OCR Output]
+'         [Normalize Format]
+'         [Detect Errors]
+'         [Merge Results]
+'     }
+    
+'     note right of aggregator
+'         **Aggregation:**
+'         • Compare confidence scores
+'         • Select best result
+'         • Format as plain text
+'         • Flag low-confidence areas
+'     end note
+' }
+
+' package "Output" #C8E6C9 {
+'     component "OCR Result" as output #81C784 {
+'         [Raw Extracted Text]
+'         [Confidence Scores]
+'         [Error Flags]
+'     }
+    
+'     note right of output
+'         **Example Output:**
+'         "Paracetmol 500m
+'         Take 3 time daily
+'         After meel"
+        
+'         (Contains OCR errors
+'         to be fixed by AI layer)
+'     end note
+' }
+
+' ' Main Flow
+' input -> router : "Optimized Image"
+
+' router -> docai : "Primary Request"
+' docai -> aggregator : "Text + Confidence"
+
+' router -[#FF0000]-> tesseract : "Fallback\n(if primary fails)"
+' tesseract -[#FF0000]-> aggregator : "Alternative Text"
+
+' aggregator -> output : "Best OCR Result"
+
+' ' Error handling
+' docai -[#FF0000]-> router : "Error/Timeout"
+' note on link : Automatic retry
+
+' legend right
+'     |= Component |= Purpose |
+'     | <back:#FFAB91>OCR Router</back> | Service selection & fallback |
+'     | <back:#FF9800>Document AI</back> | Primary OCR engine (cloud) |
+'     | <back:#8BC34A>Tesseract</back> | Backup OCR engine (offline) |
+'     | <back:#FF8A65>Aggregator</back> | Result processing |
+    
+'     **Flow:**
+'     Normal → <back:#90EE90>Green arrows</back>
+'     Error/Fallback → <back:#FFB6C1>Red arrows</back>
+    
+'     ===
+'     **🔒 DATA PRIVACY CONSIDERATION:**
+    
+'     **Current Model Options:**
+'     1. **Document AI + DeepSeek** (External Services)
+'        • Fast and accurate processing
+'        • ⚠️ Patient data sent to third parties
+'        • Privacy and security concerns
+    
+'     2. **Tesseract OCR** (Local Processing)
+'        • ✅ All processing on device
+'        • ✅ No data leakage to external services
+'        • ✅ Full privacy control
+'        • Recommended for sensitive medical data
+    
+'     **Future Implementation:**
+'     Due to security and data privacy concerns,
+'     we will consider using **Tesseract OCR**
+'     as the primary option to keep patient
+'     prescription data secure and private.
+' endlegend
+
+' @enduml
+
+
+
+
+
+
+
+
+
+@startuml OCR_Flow
 !theme vibrant
-skinparam backgroundColor #f4f6fb
+skinparam backgroundColor #FEFEFE
 skinparam componentStyle rectangle
-skinparam nodeStyle rectangle
-skinparam rectangle {
-    BackgroundColor #ffffff
-    BorderColor #4f81bd
-    BorderThickness 2
-}
-skinparam component {
-    BackgroundColor #ffffff
-    BorderColor #333333
-    BorderThickness 1.5
-}
-' skinparam linetype ortho
-skinparam arrow {
-    color #4f81bd
-    thickness 2
+skinparam ArrowColor #1976D2
+
+title DasTern - OCR Processing Flow
+
+actor "Patient/Doctor" as user #64B5F6
+
+node "Mobile Layer" #E3F2FD {
+    component "Camera Interface" as camera #90CAF9
 }
 
-title DasTern - OCR Architecture Workflow\n**Automated Prescription Processing Pipeline**
-
-node "DasTern - OCR Architecture Workflow\n**Automated Prescription Processing Pipeline**" #C8E6C9 {
-    node "Layer Image Acquisition" #E3F2FD {
-        component [Patient Captures\nPrescription] as capture #BBDEFB
-        note right of capture
-            User takes photo of
-            prescription with mobile camera
-        end note
+node "Image Preprocessing" #FFF9C4 {
+    node "Preprocessor" as preprocess #FFF176 {
+        [Resize/Rotation\nContrast Enhancement\nNoise Reduction] 
+        ' [Contrast Enhancement]
+        ' [Noise Reduction]
     }
-    component [OCR Option] as rawtext #66BB6A
-    Node "OCR Engines" #eaebd9ff {
-        component [Document AI\n(Primary)] as docai #4CAF50
-        component [Tesseract OCR\n(Alternative)] as tesseract #388E3C
+    node "OCR Processing" #FFCCBC {
+        component "Google Document AI" as docai #FF9800
+        component "Tesseract OCR" as tesseract #8BC34A
     }
-    
-    node "Layer Data Structuring" #FFE0B2 {
-        component [Convert to\nJSON Format/Validation] as json #FFCC80
-    
-        ' component [Validate\nInformation] as validate #FFB74D
-        note right of json
-            Formats data into
-            structured format
-        end note
-        node "Layer AI Enhancement" #FFF9C4 {
-            component [DeepSeek] as deepseek #FFF59D
-            note right of deepseek
-                At this stage,
-                We also concern about 
-                privacy of patient data 
-                that we send to deepseek as well.
-            end note
-            note right of deepseek
-                AI cleans & standardizes
-                extracted text for accuracy
-            end note
-        }
+
+node "AI Enhancement" #E1BEE7 {
+    cloud "Deepseek/Own Model AI" as deepseek #BA68C8 {
+        [Spelling Correction\nMedical Term Recognition\nDosage Parsing]
+        ' [Medical Term Recognition]
+        ' [Dosage Parsing]
     }
-    note right of rawtext
-        At this stage, we are evaluating both OCR models.
-        The final choice will be determined during implementation.
-        We concern about privacy of patient data as well.
-    end note
-    node "Layer User Review" #E1BEE7 {
-        component [Display to\nEditing] as display #CE93D8
-        ' component [Display\nEditing] as edit #BA68C8
-        note right of display
-            Patient reviews & confirms
-            extracted medication details
-        end note
-        node "Layer Reminder Generation" #FFCDD2 {
-            component [Calculate Reminder Times\n(Based on Meal Schedule)] as calculate #EF9A9A
-            component [Store Schedule\n(Local + Server)] as store #E57373
-        }
-    }    
+}
 }
 
 
-capture --> rawtext : Direct Send
 
-rawtext --> docai : Option 1
-rawtext --> tesseract : Option 2
-docai --> json : Send Raw Text
+node "Output" #C8E6C9 {
+    component "JSON Formatter" as json #66BB6A
+}
+
+user --> camera : Capture Prescription
+camera --> preprocess : Send Image
+preprocess --> docai : Process
+preprocess --> tesseract : Process
+docai --> deepseek : Send Raw Text
 tesseract --> deepseek : Send Raw Text
-
-deepseek --> json : Extract Structure
-legend bottom
-    |<#E3F2FD> Input Stage       |
-    |<#C8E6C9> Processing Stage  |
-    |<#FFF9C4> Enhancement Stage |
-    |<#FFE0B2> Validation Stage  |
-    |<#E1BEE7> Review Stage      |
-    |<#FFCDD2> Output Stage      |
-endlegend
-json --> display : Check Validity
-
-' validate --> display : Show Results
-display --> calculate : Patient Confirms
-calculate --> store : Save & Sync Schedule
+deepseek --> json : Cleaned Data
+json --> user : Display Results
 
 @enduml
