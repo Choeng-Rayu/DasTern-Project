@@ -1,6 +1,3 @@
-read my whole project
-to understand my project and then  help me to explain this diagram for short: 
- explaination so when the user see it they easy to understand
 
 ACKNOWLEDGMENT
 The DasTern Project represents an important academic achievement in our journey as undergraduate students at the Cambodia Academy of Digital Technology (CADT). This project allowed us to apply theoretical knowledge to practical development while addressing real-world healthcare challenges faced by patients in Cambodia.
