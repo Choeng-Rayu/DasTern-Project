@@ -28,6 +28,12 @@ actor Family as Caregiver #ffb74d
 ' actor "Telegram Bot" as Telegram
 
 node DasTern <<container>> {
+  package "Family Features" #LightGreen {
+    usecase (Link to Patient) as UC16
+    usecase (View Patient Status) as UC17
+    usecase (Receive Alerts) as UC18
+    usecase (View Medication Log) as UC19
+  }
   usecase "Register / Login" as UC_Register
   usecase "Scan Prescription" as UC_Scan
   usecase "OCR Extract Medication" as UC_OCR
@@ -40,9 +46,28 @@ node DasTern <<container>> {
   usecase "View Medication History" as UC_History
   usecase "Offline Access" as UC_Offline
   usecase "Notify Family (Telegram/App)" as UC_TG
-  usecase "Monitor Adherence" as UC_Monitor
+  ' usecase "Monitor Adherence" as UC_Monitor
   usecase "Create Prescription" as UC_Prescribe
+  package "Doctor Features" #LightYellow {
+      usecase (View Patient List) as UC12
+      usecase (Create Prescription) as UC13
+      usecase (View Patient Records) as UC14
+      usecase (Monitor Adherence) as UC15
+  }
 }
+
+Doctor -[#81c784,thickness=2]-> UC13
+Doctor -[#81c784,thickness=2]-> UC14
+Doctor -[#81c784,thickness=2]-> UC15
+Doctor -[#81c784,thickness=2]-> UC12
+Doctor -[#81c784,thickness=2]-> UC_Register
+Doctor -[#81c784,thickness=2]-> UC_Prescribe
+UC_Schedule --> UC_Notify : include
+UC_Schedule --> UC_TTS : include
+UC_Schedule --> UC_TG : extend
+
+' Doctor -[#81c784,thickness=2]-> UC_Monitor
+UC_Prescribe --> UC_TG : extend
 
 Patient -[#4fc3f7,thickness=2]-> UC_Register
 Patient -[#4fc3f7,thickness=2]-> UC_Scan
@@ -58,17 +83,13 @@ Patient -[#4fc3f7,thickness=2]-> UC_TTS
 Patient -[#4fc3f7,thickness=2]-> UC_History
 Patient -[#4fc3f7,thickness=2]-> UC_Offline
 Patient -[#4fc3f7,thickness=2]-> UC_TG
-UC_Schedule --> UC_Notify : include
-UC_Schedule --> UC_TTS : include
-UC_Schedule --> UC_TG : extend
 
-Doctor -[#81c784,thickness=2]-> UC_Register
-Doctor -[#81c784,thickness=2]-> UC_Prescribe
-Doctor -[#81c784,thickness=2]-> UC_Monitor
-UC_Prescribe --> UC_TG : extend
-
+Caregiver -[#ffb74d,thickness=2]-> UC16
+Caregiver -[#ffb74d,thickness=2]-> UC17
+Caregiver -[#ffb74d,thickness=2]-> UC18
+Caregiver -[#ffb74d,thickness=2]-> UC19
 Caregiver -[#ffb74d,thickness=2]-> UC_Register
-Caregiver -[#ffb74d,thickness=2]-> UC_Monitor
+' Caregiver -[#ffb74d,thickness=2]-> UC_Monitor
 Caregiver -[#ffb74d,thickness=2]-> UC_TG
 
 ' Telegram --> UC_TG
