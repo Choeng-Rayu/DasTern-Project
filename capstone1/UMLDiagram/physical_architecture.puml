@@ -1,5 +1,5 @@
 @startuml PhysicalArchitecture
-skinparam backgroundColor #83b1a7ff
+skinparam backgroundColor #ffffff
 skinparam componentStyle rectangle
 skinparam nodeStyle rectangle
 
